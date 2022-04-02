@@ -2,11 +2,19 @@ from django.shortcuts import render, redirect
 from .forms import RegisterForm, PostForm
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
+from .models import Post
 
 
 @login_required(login_url="/login")        # if we are not logged in, the decorator sends us to login page
 def home(request):
-    return render(request, 'main/home.html')
+    posts = Post.objects.all()
+    if request.method=="POST":
+        post_id = request.POST.get("post-id")
+        post = Post.objects.filter(id=post_id).first()
+        if post and post.author == request.user:
+            post.delete()
+
+    return render(request, 'main/home.html', {'posts': posts})
 
 
 @login_required(login_url="/login")
